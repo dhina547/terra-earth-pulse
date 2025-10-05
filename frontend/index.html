@@ -5,50 +5,256 @@
     <title>Terra Earth Pulse</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+      /* --- HIGH-CONTRAST & MODERN CSS STYLES --- */
+      :root {
+        --bg-color-light: #f8f9fa;
+        --card-bg-light: #ffffff;
+        --text-color-light: #212529;
+        --header-color-light: #0d6efd;
+        --border-color-light: #dee2e6;
+        --shadow-color-light: rgba(0, 0, 0, 0.08);
+
+        --bg-color-dark: #0d1117;
+        --card-bg-dark: #161b22;
+        --text-color-dark: #c9d1d9;
+        --header-color-dark: #58a6ff;
+        --border-color-dark: #30363d;
+        --shadow-color-dark: rgba(0, 0, 0, 0.4);
+      }
+
       body {
-        font-family: sans-serif;
-        text-align: center;
-        padding: 20px;
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-color-light);
+        color: var(--text-color-light);
+        margin: 0;
+        padding: 2rem;
+        transition: background-color 0.3s, color 0.3s;
       }
-      h1 {
-        color: #007bff;
+
+      body.dark-mode {
+        background-color: var(--bg-color-dark);
+        color: var(--text-color-dark);
       }
+
       .container {
+        max-width: 1400px;
+        margin: 0 auto;
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color-light);
+        padding-bottom: 1rem;
+      }
+      body.dark-mode .header {
+        border-bottom-color: var(--border-color-dark);
+      }
+
+      .header h1 {
+        color: var(--header-color-light);
+        font-size: 2.2rem;
+        margin: 0;
+      }
+      body.dark-mode .header h1 {
+        color: var(--header-color-dark);
+      }
+
+      .controls {
+        background-color: var(--card-bg-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px var(--shadow-color-light);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color-light);
+        transition: background-color 0.3s, border-color 0.3s;
+      }
+      body.dark-mode .controls {
+        background-color: var(--card-bg-dark);
+        box-shadow: 0 4px 15px var(--shadow-color-dark);
+        border-color: var(--border-color-dark);
+      }
+
+      #generate-button {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+      }
+      #generate-button:hover {
+        background-color: #0b5ed7;
+      }
+      #generate-button:active {
+        transform: scale(0.98);
+      }
+      #generate-button:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+      }
+
+      .visualizations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        width: 100%;
+      }
+
+      .card {
+        background-color: var(--card-bg-light);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px var(--shadow-color-light);
+        padding: 1.5rem;
+        border: 1px solid var(--border-color-light);
+        transition: background-color 0.3s, border-color 0.3s;
+      }
+      body.dark-mode .card {
+        background-color: var(--card-bg-dark);
+        box-shadow: 0 4px 15px var(--shadow-color-dark);
+        border-color: var(--border-color-dark);
+      }
+
+      /* --- IMPROVED LOADING OVERLAY --- */
+      #loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: none; /* Hidden by default */
         justify-content: center;
-        align-items: flex-start;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+        font-size: 1.5rem;
       }
-      .chart-container,
-      .globe-container {
-        flex: 1;
-        min-width: 500px;
-        margin: 10px;
+      .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #0d6efd;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
       }
-      #status {
-        font-size: 1.5em;
-        font-weight: bold;
-        height: 30px;
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* --- DARK MODE TOGGLE --- */
+      .theme-switch-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .theme-switch {
+        display: inline-block;
+        height: 24px;
+        position: relative;
+        width: 48px;
+      }
+      .theme-switch input {
+        display: none;
+      }
+      .slider {
+        background-color: #ccc;
+        bottom: 0;
+        cursor: pointer;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+      .slider:before {
+        background-color: #fff;
+        bottom: 2px;
+        content: "";
+        height: 20px;
+        left: 2px;
+        position: absolute;
+        transition: 0.4s;
+        width: 20px;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #0d6efd;
+      }
+      input:checked + .slider:before {
+        transform: translateX(24px);
       }
     </style>
   </head>
   <body>
-    <h1>Terra Earth Pulse 🛰️</h1>
-    <div>
-      <label for="year-slider">Year: <span id="year-label">2020</span></label>
-      <input type="range" id="year-slider" min="2000" max="2023" value="2020" />
-      <button id="generate-button">Generate Visualizations</button>
+    <div id="loader-overlay">
+      <div class="spinner"></div>
+      <div id="loader-text">Loading Data...</div>
     </div>
 
-    <div id="status"></div>
-
     <div class="container">
-      <div class="chart-container">
-        <canvas id="timeSeriesChart"></canvas>
+      <div class="header">
+        <h1>Terra Earth Pulse 🛰️</h1>
+        <div class="theme-switch-wrapper">
+          <span>Light / Dark</span>
+          <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
-      <div class="globe-container">
-        <div id="globe"></div>
+
+      <div class="controls">
+        <label for="year-slider">Year: <span id="year-label">2020</span></label>
+        <input
+          type="range"
+          id="year-slider"
+          min="2000"
+          max="2023"
+          value="2020"
+          style="width: 200px"
+        />
+        <button id="generate-button">Generate Visualizations</button>
+      </div>
+
+      <div id="status"></div>
+
+      <div class="visualizations-grid">
+        <div class="card chart-container">
+          <canvas id="timeSeriesChart"></canvas>
+        </div>
+        <div class="card globe-container">
+          <div id="globe" style="height: 450px"></div>
+        </div>
       </div>
     </div>
 

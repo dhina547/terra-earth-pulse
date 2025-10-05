@@ -2,10 +2,18 @@ const yearSlider = document.getElementById("year-slider");
 const yearLabel = document.getElementById("year-label");
 const generateButton = document.getElementById("generate-button");
 const statusDiv = document.getElementById("status");
+const loaderOverlay = document.getElementById("loader-overlay");
+const loaderText = document.getElementById("loader-text");
 const chartCtx = document.getElementById("timeSeriesChart").getContext("2d");
 const globeDiv = document.getElementById("globe");
+const themeToggle = document.getElementById("theme-toggle");
 
-let timeSeriesChart; // Variable to hold the chart instance
+let timeSeriesChart;
+
+// --- THEME TOGGLE LOGIC ---
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark-mode");
+});
 
 // Update the label when the slider moves
 yearSlider.addEventListener("input", (event) => {
@@ -16,14 +24,14 @@ yearSlider.addEventListener("input", (event) => {
 generateButton.addEventListener("click", async () => {
   const year = yearSlider.value;
   generateButton.disabled = true;
-  statusDiv.textContent = `Loading data for ${year}...`;
+  statusDiv.textContent = "";
+  loaderOverlay.style.display = "flex"; // Show full-screen loader
 
-  if (timeSeriesChart) {
-    timeSeriesChart.destroy();
-  }
+  if (timeSeriesChart) timeSeriesChart.destroy();
   Plotly.purge(globeDiv);
 
   try {
+    loaderText.textContent = `Fetching time-series data for ${year}...`;
     const timeSeriesApiUrl = `http://127.0.0.1:5000/api/timeseries?year=${year}`;
     const timeSeriesResponse = await fetch(timeSeriesApiUrl);
     if (!timeSeriesResponse.ok)
@@ -31,6 +39,7 @@ generateButton.addEventListener("click", async () => {
     const timeSeriesData = await timeSeriesResponse.json();
     createTimeSeriesGraph(timeSeriesData, year);
 
+    loaderText.textContent = `Fetching map data for ${year}...`;
     const mapApiUrl = `http://127.0.0.1:5000/api/annual_map?year=${year}`;
     const mapResponse = await fetch(mapApiUrl);
     if (!mapResponse.ok) throw new Error("Failed to fetch map data");
@@ -40,19 +49,17 @@ generateButton.addEventListener("click", async () => {
     statusDiv.textContent = `Visualizations for ${year} complete!`;
   } catch (error) {
     console.error("Error:", error);
-    statusDiv.textContent = `Failed to generate visualizations for ${year}. Check console for details.`;
+    statusDiv.textContent = `Failed to generate visualizations for ${year}. Check console.`;
   } finally {
     generateButton.disabled = false;
+    loaderOverlay.style.display = "none"; // Hide loader
   }
 });
 
-// Function to create the 2D line graph
+// The functions to create the graphs remain the same as the last version
 function createTimeSeriesGraph(data, year) {
-  // --- THIS IS THE UPDATED PART ---
-  // Calculate min and max for the y-axis to create a stable range
   const dataMin = Math.min(...data.averages);
   const dataMax = Math.max(...data.averages);
-  // Add a little padding to the top and bottom
   const axisMin = dataMin * 0.99;
   const axisMax = dataMax * 1.01;
 
@@ -71,28 +78,19 @@ function createTimeSeriesGraph(data, year) {
     },
     options: {
       plugins: {
-        title: {
-          display: true,
-          text: `CO Concentration Trend - ${year}`,
-        },
+        title: { display: true, text: `CO Concentration Trend - ${year}` },
       },
       scales: {
         y: {
-          min: axisMin, // Set the minimum value for the axis
-          max: axisMax, // Set the maximum value for the axis
-          ticks: {
-            // This function formats the y-axis labels
-            callback: function (value, index, values) {
-              return value.toExponential(2); // Format as scientific notation
-            },
-          },
+          min: axisMin,
+          max: axisMax,
+          ticks: { callback: (value) => value.toExponential(2) },
         },
       },
     },
   });
 }
 
-// Function to create the 3D globe
 function create3DGlobe(data, year) {
   const lonRad = data.lon.map((d) => (d * Math.PI) / 180);
   const latRad = data.lat.map((d) => (d * Math.PI) / 180);
@@ -126,14 +124,16 @@ function create3DGlobe(data, year) {
       colorscale: "jet",
       cmin: vmin,
       cmax: vmax,
-      colorbar: { title: "CO Concentration" },
+      colorbar: { title: "CO" },
     },
   ];
 
   const layout = {
     title: `Annual Average CO - ${year}`,
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
     scene: {
-      bgcolor: "black",
+      bgcolor: "rgba(0,0,0,0)",
       xaxis: { visible: false },
       yaxis: { visible: false },
       zaxis: { visible: false },
