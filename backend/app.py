@@ -45,6 +45,3 @@ def get_annual_map_data():
 # ===================================================================
 # RUN THE APP
 # ===================================================================
-if __name__ == '__main__':
-    # Set debug=False for deployment or when you're done debugging
-    app.run(debug=False)

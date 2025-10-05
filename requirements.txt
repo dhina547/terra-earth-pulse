@@ -7,6 +7,7 @@ xarray
 # ---- Web Backend ----
 Flask
 Flask-Cors
+gunicorn
 
 # ---- Geospatial Libraries ----
 geopandas
