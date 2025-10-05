@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Terra Earth Pulse</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
         font-family: sans-serif;
@@ -13,22 +14,42 @@
       h1 {
         color: #007bff;
       }
-      .controls {
-        margin: 20px 0;
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .chart-container,
+      .globe-container {
+        flex: 1;
+        min-width: 500px;
+        margin: 10px;
+      }
+      #status {
+        font-size: 1.5em;
+        font-weight: bold;
+        height: 30px;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <h1>Terra Earth Pulse 🛰️</h1>
-    <div class="controls">
+    <div>
       <label for="year-slider">Year: <span id="year-label">2020</span></label>
       <input type="range" id="year-slider" min="2000" max="2023" value="2020" />
-      <button id="generate-button">Generate Graph</button>
+      <button id="generate-button">Generate Visualizations</button>
     </div>
 
-    <div style="width: 80%; margin: auto">
-      <canvas id="myChart"></canvas>
+    <div id="status"></div>
+
+    <div class="container">
+      <div class="chart-container">
+        <canvas id="timeSeriesChart"></canvas>
+      </div>
+      <div class="globe-container">
+        <div id="globe"></div>
+      </div>
     </div>
 
     <script src="script.js"></script>
