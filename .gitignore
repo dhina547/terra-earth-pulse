@@ -18,3 +18,5 @@ dist/
 # System files
 .DS_Store
 Thumbs.db
+#IMPORTANT: DO NOT ignore the processed data file
+!backend/processed_data.json
