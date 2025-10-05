@@ -1,0 +1,25 @@
+# ---- Core & Data Handling ----
+numpy
+pandas
+h5py
+xarray
+
+# ---- Web Backend ----
+Flask
+Flask-Cors
+
+# ---- Geospatial Libraries ----
+geopandas
+rioxarray
+cartopy
+
+# ---- Visualization Libraries ----
+matplotlib
+plotly
+folium
+branca
+hvplot
+panel
+
+# ---- Utilities ----
+requests
