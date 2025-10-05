@@ -25,44 +25,46 @@ generateButton.addEventListener("click", async () => {
   const year = yearSlider.value;
   generateButton.disabled = true;
   statusDiv.textContent = "";
-  loaderOverlay.style.display = "flex"; // Show full-screen loader
+  loaderOverlay.style.display = "flex";
 
   if (timeSeriesChart) timeSeriesChart.destroy();
   Plotly.purge(globeDiv);
 
   try {
+    // --- CRITICAL FIX: Use the public Render URL, not the local one ---
+    const backendUrl = "https://terra-earth-pulse.onrender.com";
+
     loaderText.textContent = `Fetching time-series data for ${year}...`;
-
-    // --- IMPORTANT: Use your live Render backend URL here ---
-    const timeSeriesApiUrl = `https://terra-pulse-backend.onrender.com/api/timeseries?year=${year}`;
-
+    const timeSeriesApiUrl = `${backendUrl}/api/timeseries?year=${year}`;
     const timeSeriesResponse = await fetch(timeSeriesApiUrl);
     if (!timeSeriesResponse.ok)
-      throw new Error("Failed to fetch time-series data");
+      throw new Error(
+        `Failed to fetch time-series data. Server responded with ${timeSeriesResponse.status}`
+      );
     const timeSeriesData = await timeSeriesResponse.json();
     createTimeSeriesGraph(timeSeriesData, year);
 
     loaderText.textContent = `Fetching map data for ${year}...`;
-
-    // --- IMPORTANT: Use your live Render backend URL here ---
-    const mapApiUrl = `https://terra-pulse-backend.onrender.com/api/annual_map?year=${year}`;
-
+    const mapApiUrl = `${backendUrl}/api/annual_map?year=${year}`;
     const mapResponse = await fetch(mapApiUrl);
-    if (!mapResponse.ok) throw new Error("Failed to fetch map data");
+    if (!mapResponse.ok)
+      throw new Error(
+        `Failed to fetch map data. Server responded with ${mapResponse.status}`
+      );
     const mapData = await mapResponse.json();
     create3DGlobe(mapData, year);
 
     statusDiv.textContent = `Visualizations for ${year} complete!`;
   } catch (error) {
     console.error("Error:", error);
-    statusDiv.textContent = `Failed to generate visualizations for ${year}. Check console.`;
+    statusDiv.textContent = `Failed to generate visualizations. ${error.message}`;
   } finally {
     generateButton.disabled = false;
-    loaderOverlay.style.display = "none"; // Hide loader
+    loaderOverlay.style.display = "none";
   }
 });
 
-// The functions to create the graphs remain the same as the last version
+// Function to create the 2D line graph
 function createTimeSeriesGraph(data, year) {
   const dataMin = Math.min(...data.averages);
   const dataMax = Math.max(...data.averages);
@@ -97,6 +99,7 @@ function createTimeSeriesGraph(data, year) {
   });
 }
 
+// Function to create the 3D globe
 function create3DGlobe(data, year) {
   const lonRad = data.lon.map((d) => (d * Math.PI) / 180);
   const latRad = data.lat.map((d) => (d * Math.PI) / 180);
