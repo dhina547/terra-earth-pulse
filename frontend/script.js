@@ -32,7 +32,10 @@ generateButton.addEventListener("click", async () => {
 
   try {
     loaderText.textContent = `Fetching time-series data for ${year}...`;
-    const timeSeriesApiUrl = `http://127.0.0.1:5000/api/timeseries?year=${year}`;
+
+    // --- IMPORTANT: Use your live Render backend URL here ---
+    const timeSeriesApiUrl = `https://terra-pulse-backend.onrender.com/api/timeseries?year=${year}`;
+
     const timeSeriesResponse = await fetch(timeSeriesApiUrl);
     if (!timeSeriesResponse.ok)
       throw new Error("Failed to fetch time-series data");
@@ -40,7 +43,10 @@ generateButton.addEventListener("click", async () => {
     createTimeSeriesGraph(timeSeriesData, year);
 
     loaderText.textContent = `Fetching map data for ${year}...`;
-    const mapApiUrl = `http://127.0.0.1:5000/api/annual_map?year=${year}`;
+
+    // --- IMPORTANT: Use your live Render backend URL here ---
+    const mapApiUrl = `https://terra-pulse-backend.onrender.com/api/annual_map?year=${year}`;
+
     const mapResponse = await fetch(mapApiUrl);
     if (!mapResponse.ok) throw new Error("Failed to fetch map data");
     const mapData = await mapResponse.json();
